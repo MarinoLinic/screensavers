@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09151c">
+  <meta name="description" content="Three living liquid landscapes: a silver grotto, an industrial reservoir, and a forest stream.">
+  <title>Liquid Worlds</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2380dedf' d='M16 3C12 10 6 15 6 21a10 10 0 0020 0c0-6-6-11-10-18z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="collection-ui.css">
+</head>
+<body>
+  <main id="stage">
+    <canvas id="canvas" tabindex="0" aria-label="Animated liquid landscape. Drag to orbit, click the liquid to make a splash."></canvas>
+    <div id="loading" class="notice"><span class="drop-mark">◊</span><h1>Liquid Worlds</h1><p>Finding the light…</p></div>
+    <div id="failure" class="notice" hidden><h1>A little more graphics power</h1><p id="failureText">These landscapes need WebGL 2. Try a browser with hardware acceleration enabled.</p><button onclick="location.reload()">Try again</button></div>
+  </main>
+
+  <div id="chrome">
+    <header class="masthead"><span class="brand"><span class="drop-mark">◊</span> LIQUID WORLDS</span><span class="edition">THREE LIVING LANDSCAPES</span></header>
+    <div class="scene-caption"><p class="eyebrow" id="sceneNumber">01 / 03</p><h1 id="sceneTitle">Argent Grotto</h1><p id="sceneSubtitle">Silver tides beneath the mountain</p></div>
+    <nav class="toolbar" aria-label="Screensaver controls">
+      <button id="settingsButton" title="Settings (O)"><b>[O]</b><span class="button-text">Settings</span></button>
+      <button id="pause" title="Pause (Space)" aria-pressed="false"><b id="pauseIcon">[Space]</b><span class="button-text" id="pauseLabel">Pause</span></button>
+      <button id="prev" title="Previous scene (P or [)" aria-label="Previous scene"><b>[P]</b><span class="button-text">Previous</span></button>
+      <button id="next" title="Next scene (N or ])" aria-label="Next scene"><b>[N]</b><span class="button-text">Next</span></button>
+      <button id="snapshot" title="Save PNG (S)"><b>[S]</b><span class="button-text">Snapshot</span></button>
+      <button id="fullscreen" title="Fullscreen (F)"><b>[F]</b><span class="button-text">Fullscreen</span></button>
+      <button id="hide" title="Hide controls (H)"><b>[H]</b><span class="button-text">Hide</span></button>
+    </nav>
+    <p class="hint">DRAG TO LOOK · CLICK WATER TO SPLASH · 1 / 2 / 3 TO TRAVEL</p>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="backdrop" hidden></div>
+  <aside id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" hidden>
+    <header class="panel-head"><div><p class="eyebrow">A MOMENT ELSEWHERE</p><h2 id="panelTitle">Liquid Worlds — Display Properties</h2></div><button id="close" aria-label="Close settings">×</button></header>
+    <div class="panel-body">
+      <section><h3>Choose a landscape</h3><div id="scenes" class="scene-cards"></div></section>
+      <section>
+        <h3>Let it wander</h3>
+        <label class="check"><input id="cycle" type="checkbox">Travel through all three scenes</label>
+        <label class="field"><span>Stay in each scene</span><select id="interval"><option value="30">30 seconds</option><option value="60">1 minute</option><option value="90">90 seconds</option><option value="180">3 minutes</option><option value="300">5 minutes</option></select></label>
+        <label class="field"><span>Camera</span><select id="camera"><option value="drift">Gentle drift</option><option value="fixed">Still viewpoint</option></select></label>
+        <label class="field slider"><span>Time <output id="speedOut"></output></span><input id="speed" type="range" min="0.25" max="2" step="0.05"></label>
+        <label class="field slider"><span>Liquid activity <output id="activityOut"></output></span><input id="activity" type="range" min="0.25" max="2" step="0.05"></label>
+      </section>
+      <section>
+        <h3>Light & detail</h3>
+        <label class="field"><span>Quality</span><select id="quality"><option value="low">Economy</option><option value="balanced">Balanced</option><option value="high">High detail</option></select></label>
+        <label class="check"><input id="bloom" type="checkbox">Soft light bloom</label>
+        <p class="muted">Balanced adapts its resolution on slower devices. High detail gives sharper reflections and smoother surfaces.</p>
+      </section>
+      <details><summary>Pattern & keyboard</summary>
+        <label class="field"><span>Landscape seed</span><input id="seed" type="number" min="0" max="2147483647" step="1"></label>
+        <div class="actions"><button id="applySeed">Apply seed</button><button id="newSeed">New landscape</button><button id="resetCamera">Reset view</button></div>
+        <p class="muted">O settings · Space pause · F fullscreen · H hide · S snapshot · A camera drift · R new landscape · [ / ] scenes · 1 / 2 / 3 select · Esc show controls / close settings</p>
+        <p class="muted">Drag to orbit, scroll to zoom, double-click to reset. Click or tap the liquid to send ripples across it.</p>
+      </details>
+      <details><summary>Performance</summary><p id="diagnostics" class="muted"></p></details>
+      <p class="panel-foot">Inspired by the Plus! era. Made for the light of today.</p>
+    </div>
+  </aside>
+  <script type="module" src="js/app.js"></script>
+  <script defer src="collection-ui.js" data-project="liquid-worlds"></script>
+</body>
+</html>

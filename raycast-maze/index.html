@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Maze</title>
+<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="collection-ui.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2307100a'/%3E%3Cpath d='m4 5 3 3-3 3m5 0h3' fill='none' stroke='%2359d98c' stroke-width='1.5'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="game-shell">
+  <canvas id="c" tabindex="0" role="img"
+    aria-label="First-person view of a textured 3D maze"></canvas>
+  <div id="scanlines" aria-hidden="true"></div>
+  <div id="reticle" aria-hidden="true"></div>
+  <div id="event-flash" aria-hidden="true"></div>
+
+  <header id="hud">
+    <div id="level-label">--</div>
+    <div id="relic-label">RELICS --</div>
+    <div id="status-label" role="status" aria-live="polite"></div>
+    <div id="mode-label">MODE: MANUAL</div>
+  </header>
+
+  <div id="encounter-feed" role="log" aria-live="polite"
+    aria-label="Encounter log"></div>
+
+  <section id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="panel intro-panel">
+      <p class="kicker">SCREEN SAVER PROTOCOL</p>
+      <h1 id="intro-title">3D MAZE</h1>
+      <p class="intro-copy">
+        Fifty themed sectors. Drift past fish, drones, ghosts and
+        dragons. Gather every relic to trigger OVERDRIVE. Touch a cyan
+        anomaly and the world rolls upside down. Creatures bump, slow,
+        reverse or boost you (toggle with I). Sound is procedural (V).
+        Wander far enough and you will find the EXIT doorway.
+      </p>
+      <button id="enter-button" type="button">ENTER THE MAZE</button>
+      <p class="intro-hint">
+        WASD MOVE | MOUSE LOOK | T AUTO | U BRAIN | B ABOUT | H HUD | N/P SECTOR | L SELECT | I INTERACT | V SOUND | M MAP | C SHOT | G SCANLINES | Q LOW RES | F FULLSCREEN | R RESET
+      </p>
+    </div>
+  </section>
+
+  <section id="level-select" class="hidden" role="dialog" aria-modal="true"
+    aria-hidden="true" aria-labelledby="level-select-title">
+    <div class="panel level-select-panel">
+      <div class="level-select-heading">
+        <div>
+          <p class="kicker">50 SECTORS ONLINE</p>
+          <h2 id="level-select-title">SELECT SECTOR</h2>
+        </div>
+      </div>
+      <p class="level-select-help">Use arrows to choose a sector. Enter loads it.</p>
+      <select id="level-list" size="14" aria-label="Select sector"></select>
+      <div class="level-select-actions">
+        <button id="level-load-button" type="button">LOAD [ENTER]</button>
+        <button id="level-select-close" type="button">CLOSE [ESC]</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="level-notes" class="hidden" role="dialog" aria-modal="true"
+    aria-hidden="true" aria-labelledby="notes-title">
+    <div class="panel notes-panel">
+      <p class="kicker">SECTOR BRIEFING</p>
+      <h2 id="notes-title">SECTOR</h2>
+      <h3 class="notes-heading">SETTING</h3>
+      <p id="notes-setting" class="notes-copy"></p>
+      <h3 class="notes-heading">CREATURES</h3>
+      <p id="notes-creatures" class="notes-copy"></p>
+      <h3 class="notes-heading">PICKUPS + EXIT</h3>
+      <p id="notes-items" class="notes-copy"></p>
+      <p class="notes-copy notes-rule">Touch creatures/pickups to interact. In auto,
+        bumps do not shove or turn you; reversed mouse-look only affects manual play.</p>
+      <p class="notes-legend">MAP LEGEND: <span class="dot dot-creature"></span> CREATURE
+        <span class="dot dot-relic"></span> RELIC
+        <span class="dot dot-anomaly"></span> ANOMALY
+        <span class="dot dot-exit"></span> EXIT</p>
+      <div class="level-select-actions">
+        <button id="notes-close" type="button">CLOSE [ESC]</button>
+      </div>
+    </div>
+  </section>
+
+  <footer id="controls">
+    <div class="button-row">
+      <button id="auto-button" type="button" aria-pressed="false">AUTO [T]: OFF</button>
+      <button id="auto-brain-button" type="button" aria-pressed="true">AUTO BRAIN [U]: SMART</button>
+      <button id="interaction-button" type="button" aria-pressed="true">INTERACTIONS [I]: ON</button>
+      <button id="sound-button" type="button" aria-pressed="true">SOUND [V]: ON</button>
+      <button id="map-button" type="button" aria-pressed="false">MAP [M]: OFF</button>
+      <button id="hud-button" type="button" aria-pressed="true">HUD [H]: ON</button>
+      <button id="notes-button" type="button">ABOUT [B]</button>
+      <button id="screenshot-button" type="button">SHOT [C]</button>
+      <button id="scanlines-button" type="button" aria-pressed="true">SCANLINES [G]: ON</button>
+      <button id="low-res-button" type="button" aria-pressed="true">LOW RES [Q]: ON</button>
+      <button id="fullscreen-button" type="button">FULLSCREEN [F]</button>
+      <button id="reset-button" type="button">RESET [R]</button>
+      <button id="previous-button" type="button">PREV [P]</button>
+      <button id="next-button" type="button">NEXT [N]</button>
+      <button id="level-select-button" type="button">LEVELS [L]</button>
+    </div>
+    <p id="hint-text">
+      WASD MOVE | MOUSE LOOK | T AUTO | U BRAIN | B ABOUT | H HUD | N/P SECTOR | L SELECT | I INTERACT | V SOUND | M MAP | C SHOT | G SCANLINES | Q LOW RES | F FULLSCREEN | R RESET
+    </p>
+  </footer>
+
+  <div id="touch-controls" aria-label="Touch controls">
+    <div class="touch-cluster touch-left">
+      <button type="button" data-action="strafe-left" aria-label="Strafe left">&lt;&lt;</button>
+      <button type="button" data-action="left" aria-label="Turn left">&lt;</button>
+      <button type="button" data-action="right" aria-label="Turn right">&gt;</button>
+      <button type="button" data-action="strafe-right" aria-label="Strafe right">&gt;&gt;</button>
+    </div>
+    <div class="touch-cluster touch-right">
+      <button type="button" data-action="forward" aria-label="Move forward">FWD</button>
+      <button type="button" data-action="backward" aria-label="Move backward">BACK</button>
+    </div>
+  </div>
+</div>
+
+<script>const LEVELS = [];</script>
+<script defer src="levels/level1.js"></script>
+<script defer src="levels/level2.js"></script>
+<script defer src="levels/level3.js"></script>
+<script defer src="levels/level4.js"></script>
+<script defer src="levels/level5.js"></script>
+<script defer src="levels/level6.js"></script>
+<script defer src="levels/level7.js"></script>
+<script defer src="levels/level8.js"></script>
+<script defer src="levels/level9.js"></script>
+<script defer src="levels/level10.js"></script>
+<script defer src="levels/level11.js"></script>
+<script defer src="levels/level12.js"></script>
+<script defer src="levels/level13.js"></script>
+<script defer src="levels/level14.js"></script>
+<script defer src="levels/level15.js"></script>
+<script defer src="levels/level16.js"></script>
+<script defer src="levels/level17.js"></script>
+<script defer src="levels/level18.js"></script>
+<script defer src="levels/level19.js"></script>
+<script defer src="levels/level20.js"></script>
+<script defer src="levels/level21.js"></script>
+<script defer src="levels/level22.js"></script>
+<script defer src="levels/level23.js"></script>
+<script defer src="levels/level24.js"></script>
+<script defer src="levels/level25.js"></script>
+<script defer src="levels/level26.js"></script>
+<script defer src="levels/level27.js"></script>
+<script defer src="levels/level28.js"></script>
+<script defer src="levels/level29.js"></script>
+<script defer src="levels/level30.js"></script>
+<script defer src="levels/level31.js"></script>
+<script defer src="levels/level32.js"></script>
+<script defer src="levels/level33.js"></script>
+<script defer src="levels/level34.js"></script>
+<script defer src="levels/level35.js"></script>
+<script defer src="levels/level36.js"></script>
+<script defer src="levels/level37.js"></script>
+<script defer src="levels/level38.js"></script>
+<script defer src="levels/level39.js"></script>
+<script defer src="levels/level40.js"></script>
+<script defer src="levels/level41.js"></script>
+<script defer src="levels/level42.js"></script>
+<script defer src="levels/level43.js"></script>
+<script defer src="levels/level44.js"></script>
+<script defer src="levels/level45.js"></script>
+<script defer src="levels/level46.js"></script>
+<script defer src="levels/level47.js"></script>
+<script defer src="levels/level48.js"></script>
+<script defer src="levels/level49.js"></script>
+<script defer src="levels/level50.js"></script>
+<script defer src="js/config.js"></script>
+<script defer src="js/settings.js"></script>
+<script defer src="js/textures/core.js"></script>
+<script defer src="js/textures/retro-pack.js"></script>
+<script defer src="js/textures/fantasy-pack.js"></script>
+<script defer src="js/textures/civilizations-pack.js"></script>
+<script defer src="js/textures/aesthetic-pack.js"></script>
+<script defer src="js/textures/level-variants.js"></script>
+<script defer src="js/input.js"></script>
+<script defer src="js/autopilot.js"></script>
+<script defer src="js/interactions.js"></script>
+<script defer src="js/entities.js"></script>
+<script defer src="js/audio.js"></script>
+<script defer src="js/renderer.js"></script>
+<script defer src="game.js"></script>
+  <script defer src="collection-ui.js" data-project="raycast-maze"></script>
+</body>
+</html>

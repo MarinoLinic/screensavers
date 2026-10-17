@@ -1,0 +1,40 @@
+✔ disabled cycle never pulses and clears elapsed (1.4382ms)
+✔ pulse fires once per interval and carries remainder (0.4738ms)
+✔ nonpositive/invalid dt keeps elapsed (pause-safe) (0.1715ms)
+✔ countdown is independent of the simulation speed (0.2614ms)
+✔ reset restarts the countdown; bad interval disables (0.5472ms)
+✔ seed 0 is valid and deterministic; different seeds differ (5.6128ms)
+✔ mixed family guarantees all ten shapes at count >= 10 (0.8238ms)
+✔ families constrain the shape set (0.8346ms)
+✔ all six motions stay finite and bounded over 10k steps, all aspects (56.2693ms)
+✔ six motions produce distinct trajectories (3.0142ms)
+✔ equal elapsed partition produces the same sample (0.3461ms)
+✔ speed multiplies sim time; spin 0 freezes rotation only (1.4276ms)
+✔ invalid dt is ignored; negative and NaN do not corrupt (0.1702ms)
+✔ look/display updates never reset time or regenerate bodies (0.3017ms)
+✔ family/count/seed changes regenerate deterministically (0.329ms)
+✔ classic flies exactly one large object; count pref preserved (0.1883ms)
+✔ classic boundary regenerates even when effective count is unchanged (0.1497ms)
+✔ motion change eases from displayed positions, then settles (0.3436ms)
+✔ settleLayout applies pending layout without stepping time (0.2343ms)
+✔ spin changes never snap orientation; spin 0 freezes pose (0.2211ms)
+✔ partition independence covers rotation accumulator too (0.1534ms)
+✔ portrait aspect narrows the horizontal volume (0.298ms)
+✔ validateSettings passes a clean object through (3.4127ms)
+✔ malformed roots fall back to defaults (0.3926ms)
+✔ validateSettings rejects bad enums, bools, unknowns (0.3465ms)
+✔ range edges inclusive, integers rounded (0.2544ms)
+✔ numeric strings accepted; empty/null/bool rejected (0.2106ms)
+✔ eight presets in fixed keyboard order with required fields (1.0682ms)
+✔ motions and families ship the exact key sets (0.3553ms)
+✔ loadSettings survives malformed storage, bad version, arrays (1.4752ms)
+✔ save/load roundtrip; runtime keys never persisted (0.4046ms)
+✔ applyPreset changes ONLY the preset id — everything survives (0.4547ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 223.7211

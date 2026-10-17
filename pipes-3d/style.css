@@ -1,0 +1,451 @@
+/* PIPELINE — phosphor terminal overlay on a full-viewport stage. */
+
+:root {
+  --phos: #59d98c;
+  --phos-dim: #3a9e63;
+  --phos-bright: #8ff5b4;
+  --ink-soft: #7fae90;
+  --panel-bg: rgba(7, 16, 10, 0.92);
+  --panel-line: #24452f;
+  --keycap-top: #1c3325;
+  --keycap-bot: #0d1a12;
+  --keycap-line: #2f5238;
+  --keycap-shadow: #06100a;
+  --danger: #d9694f;
+  --mono: "Lucida Console", "Courier New", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #04070a;
+  overflow: hidden;
+}
+
+body {
+  color: var(--phos);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------- stage */
+
+#stage {
+  position: fixed;
+  inset: 0;
+  background: #07090d;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#gl:active { cursor: grabbing; }
+
+body.lowres #gl,
+body.pixelmode #gl { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 58%, rgba(0, 0, 0, 0.38) 100%);
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.16) 0px,
+    rgba(0, 0, 0, 0.16) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+.webgl-fail {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--phos);
+  padding: 24px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(20, 48, 30, 0.5), transparent 70%),
+    #04070a;
+}
+
+.webgl-fail h2 { margin: 0; letter-spacing: 0.1em; text-transform: uppercase; }
+.webgl-fail p { max-width: 46ch; margin: 0; color: var(--ink-soft); }
+
+/* -------------------------------------------------------------- backdrop */
+
+#backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(4, 10, 6, 0.25), rgba(2, 5, 3, 0.55));
+}
+
+/* ---------------------------------------------------------------- panel */
+
+#panel {
+  position: fixed;
+  z-index: 40;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 56px);
+  width: min(360px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(46, 96, 60, 0.22), transparent 60%),
+    var(--panel-bg);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(140, 240, 170, 0.12),
+    0 18px 44px -12px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+  overflow: hidden;
+}
+
+#panel:focus { outline: none; }
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--panel-line);
+}
+
+.panel-head h1 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  color: var(--phos-bright);
+  text-shadow: 0 0 8px rgba(89, 217, 140, 0.45);
+}
+
+.panel-sub {
+  margin: 2px 0 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+.panel-status {
+  margin: 0;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--phos-dim);
+  border-bottom: 1px solid var(--panel-line);
+  min-height: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-body {
+  overflow-y: auto;
+  padding: 10px 14px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--keycap-line) transparent;
+}
+
+.blk {
+  border: 1px solid var(--panel-line);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: rgba(10, 24, 15, 0.45);
+}
+
+.blk summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 10px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--phos-bright);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.blk summary::-webkit-details-marker { display: none; }
+.blk summary::before { content: "▸ "; color: var(--phos-dim); }
+.blk[open] summary::before { content: "▾ "; }
+.blk summary:focus-visible { outline: 1px solid var(--phos); outline-offset: -2px; }
+
+.sum-hint {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  text-transform: none;
+}
+
+.blk > *:not(summary) { margin-left: 10px; margin-right: 10px; }
+.blk > *:last-child { margin-bottom: 10px; }
+
+/* ------------------------------------------------------------ controls */
+
+.key-btn, #keystrip button, #restoreChip {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--phos);
+  background: linear-gradient(to bottom, var(--keycap-top), var(--keycap-bot));
+  border: 1px solid var(--keycap-line);
+  border-bottom-width: 2px;
+  border-bottom-color: var(--keycap-shadow);
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.key-btn:hover, #keystrip button:hover, #restoreChip:hover { color: var(--phos-bright); border-color: var(--phos-dim); }
+.key-btn:active, #keystrip button:active, #restoreChip:active { transform: translateY(1px); border-bottom-width: 1px; }
+.key-btn:focus-visible, #keystrip button:focus-visible, #restoreChip:focus-visible,
+input:focus-visible, select:focus-visible {
+  outline: 1px solid var(--phos);
+  outline-offset: 2px;
+}
+
+.key-btn.ghost { color: var(--ink-soft); }
+.key-btn[aria-pressed="true"] {
+  background: linear-gradient(to bottom, #2a4d34, #142a1c);
+  color: var(--phos-bright);
+  border-color: var(--phos-dim);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.field > span:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.field output { color: var(--phos-bright); font-variant-numeric: tabular-nums; }
+
+.field select, .field input[type="number"] {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 5px 7px;
+  border: 1px solid var(--keycap-line);
+  border-radius: 4px;
+  background: #0a1410;
+  color: var(--phos);
+  width: 100%;
+}
+
+.field input[type="range"] { width: 100%; accent-color: var(--phos); }
+
+.seed-row { display: flex; gap: 6px; align-items: center; }
+.seed-row input { flex: 1; min-width: 0; }
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  color: var(--phos);
+}
+
+.check input { accent-color: var(--phos); width: 14px; height: 14px; }
+
+.hint {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.keys-doc { letter-spacing: 0.02em; }
+
+/* style cards */
+
+.presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 7px 8px;
+  border: 1px solid var(--keycap-line);
+  border-bottom-width: 2px;
+  border-bottom-color: var(--keycap-shadow);
+  border-radius: 5px;
+  background: linear-gradient(to bottom, var(--keycap-top), var(--keycap-bot));
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--mono);
+  color: var(--phos);
+}
+
+.preset-btn[aria-pressed="true"] {
+  border-color: var(--phos);
+  box-shadow: inset 0 0 0 1px var(--phos-dim), 0 0 10px -4px var(--phos);
+}
+
+.preset-btn .pname {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--phos-bright);
+}
+
+.preset-btn .pnum { font-size: 9px; color: var(--ink-soft); }
+.preset-btn .pblurb { font-size: 9.5px; color: var(--ink-soft); line-height: 1.35; }
+
+.swatches { display: flex; gap: 3px; }
+.swatches i {
+  width: 12px; height: 12px; border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  display: inline-block;
+}
+
+/* recipes */
+
+.recipes {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+/* stats */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.stat-grid div {
+  background: rgba(10, 24, 15, 0.7);
+  border: 1px solid var(--panel-line);
+  border-radius: 5px;
+  padding: 5px 8px;
+}
+
+.stat-grid dt {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.stat-grid dd {
+  margin: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--phos-bright);
+}
+
+/* ------------------------------------------------------------ key strip */
+
+#keystrip {
+  position: fixed;
+  z-index: 35;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: max-content;      /* shrink-to-fit would narrow it to ~4 rows */
+  max-width: calc(100vw - 16px);
+  padding: 6px;
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(46, 96, 60, 0.2), transparent 70%),
+    rgba(6, 13, 9, 0.85);
+  backdrop-filter: blur(3px);
+}
+
+#keystrip button b { color: var(--phos-bright); font-weight: 400; }
+#keystrip button[aria-pressed="true"] b { color: var(--danger); }
+
+#restoreChip {
+  position: fixed;
+  z-index: 35;
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  padding: 7px 12px;
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------- mobile */
+
+@media (max-width: 720px) {
+  #panel {
+    top: auto;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(78dvh, 100dvh - 16px);
+  }
+  #keystrip {
+    gap: 4px;
+    padding: 5px;
+    bottom: max(6px, env(safe-area-inset-bottom));
+  }
+  #keystrip button { font-size: 10px; padding: 5px 7px; }
+}
+
+/* ------------------------------------------------------ reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

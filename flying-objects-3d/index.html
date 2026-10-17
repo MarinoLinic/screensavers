@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>3D FLYING OBJECTS — a zero-g kinetic sculpture</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="collection-ui.css">
+</head>
+<body>
+  <!-- The stage always fills the whole viewport; UI floats above it. -->
+  <main id="stage" aria-label="3D flying objects stage">
+    <canvas id="gl" tabindex="0" aria-label="Animated 3D flying objects scene"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="scanlines" id="scanlines" aria-hidden="true" hidden></div>
+    <div class="webgl-fail" id="webglFail" hidden>
+      <h2>WebGL unavailable</h2>
+      <p>3D FLYING OBJECTS needs WebGL to draw its sculpture. Your browser or
+      GPU refused a context — try another browser, or re-enable hardware
+      acceleration.</p>
+      <button id="webglRetry" class="key-btn" type="button">Retry</button>
+    </div>
+  </main>
+
+  <div id="backdrop" hidden></div>
+
+  <aside id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle"
+         hidden inert>
+    <header class="panel-head">
+      <div class="panel-title-wrap">
+        <h1 id="panelTitle">Flying Objects — Display Properties</h1>
+        <p class="panel-sub">zero-g sculpture garden · settings terminal</p>
+      </div>
+      <button id="panelClose" aria-label="Close settings" class="key-btn" type="button">×</button>
+    </header>
+    <p id="headStatus" class="panel-status" role="status">ready</p>
+
+    <div class="panel-body">
+      <details class="blk" open>
+        <summary>Look<span class="sum-hint">[ ] cycle · 1-8 pick</span></summary>
+        <div class="presets" id="presets" role="group" aria-label="Styles"></div>
+        <label class="field">
+          <span>Material</span>
+          <select id="materialSel">
+            <option value="auto">Auto (style decides)</option>
+            <option value="chrome">Chrome</option>
+            <option value="ceramic">Ceramic</option>
+            <option value="glass">Glass</option>
+            <option value="wireframe">Wireframe</option>
+            <option value="checker">Checker</option>
+          </select>
+        </label>
+        <label class="check">
+          <input id="autoCycleIn" type="checkbox" />
+          <span>Cycle styles automatically</span>
+        </label>
+        <label class="field">
+          <span>Change style every</span>
+          <select id="cycleIntervalSel" disabled>
+            <option value="20">20 seconds</option>
+            <option value="45">45 seconds</option>
+            <option value="90">90 seconds</option>
+            <option value="180">180 seconds</option>
+          </select>
+        </label>
+        <p class="hint">Styles bundle palette, default material and lighting
+        only — your objects, motion, seed and material override stay put.</p>
+      </details>
+
+      <details class="blk" open>
+        <summary>Objects<span class="sum-hint">family · count · size</span></summary>
+        <label class="field">
+          <span>Family</span>
+          <select id="familySel"></select>
+        </label>
+        <label class="field">
+          <span>Objects <output id="countOut">16</output></span>
+          <input id="countIn" type="range" min="1" max="40" step="1" value="16" />
+        </label>
+        <label class="field">
+          <span>Size <output id="scaleOut">1.00×</output></span>
+          <input id="scaleIn" type="range" min="0.5" max="1.8" step="0.05" value="1" />
+        </label>
+        <p class="hint" id="familyHint"></p>
+      </details>
+
+      <details class="blk" open>
+        <summary>Motion<span class="sum-hint">pace · spin · spread</span></summary>
+        <div class="recipes" id="motions" role="group" aria-label="Choreographies"></div>
+        <label class="field">
+          <span>Pace <output id="speedOut">0.75×</output></span>
+          <input id="speedIn" type="range" min="0.15" max="3" step="0.05" value="0.75" />
+        </label>
+        <label class="field">
+          <span>Tumble <output id="spinOut">0.55</output></span>
+          <input id="spinIn" type="range" min="0" max="2" step="0.05" value="0.55" />
+        </label>
+        <label class="field">
+          <span>Spread <output id="spreadOut">1.00</output></span>
+          <input id="spreadIn" type="range" min="0.5" max="1.5" step="0.05" value="1" />
+        </label>
+        <p class="hint" id="motionHint"></p>
+      </details>
+
+      <details class="blk">
+        <summary>Display<span class="sum-hint">camera · retro switches</span></summary>
+        <label class="field">
+          <span>Camera</span>
+          <select id="cameraSel">
+            <option value="drift">Auto drift</option>
+            <option value="fixed">Fixed</option>
+          </select>
+        </label>
+        <label class="check">
+          <input id="trailsIn" type="checkbox" /> <span>Motion trails</span>
+        </label>
+        <label class="check">
+          <input id="starsIn" type="checkbox" /> <span>Star dust</span>
+        </label>
+        <label class="check">
+          <input id="lowResIn" type="checkbox" /> <span>Retro low-res [Q]</span>
+        </label>
+        <label class="check">
+          <input id="scanIn" type="checkbox" /> <span>Scanlines [G]</span>
+        </label>
+        <p class="hint" id="displayHint">Drag to orbit, wheel to zoom,
+        double-click to reset. The camera keeps answering while paused.</p>
+      </details>
+
+      <details class="blk">
+        <summary>Seed · keys<span class="sum-hint">R new · A camera</span></summary>
+        <label class="field">
+          <span>Seed</span>
+          <span class="seed-row">
+            <input id="seedIn" type="number" min="0" max="2147483647" step="1" value="1997" />
+            <button id="seedBtn" class="key-btn" type="button">Apply</button>
+            <button id="newBtn" class="key-btn" type="button">New</button>
+          </span>
+        </label>
+        <div class="btn-row">
+          <button id="resetBtn" class="key-btn ghost" type="button">Reset defaults</button>
+          <button id="viewBtn" class="key-btn ghost" type="button">Reset view</button>
+        </div>
+        <p class="hint keys-doc">
+          O settings · Esc close · Space pause · R new seed · S/C snapshot ·
+          F fullscreen · H hide strip · A camera · G scanlines · Q low-res ·
+          [ ] styles · 1-8 direct style · drag orbit · wheel zoom ·
+          dbl-click reset
+        </p>
+      </details>
+
+      <details class="blk">
+        <summary>Diagnostics<span class="sum-hint">stage status</span></summary>
+        <dl class="stat-grid">
+          <div><dt>Objects</dt><dd id="stCount">–</dd></div>
+          <div><dt>Draws</dt><dd id="stCalls">–</dd></div>
+          <div><dt>Tris</dt><dd id="stTris">–</dd></div>
+          <div><dt>Geoms</dt><dd id="stGeoms">–</dd></div>
+          <div><dt>Seed</dt><dd id="stSeed">–</dd></div>
+          <div><dt>Time</dt><dd id="stTime">–</dd></div>
+        </dl>
+        <p class="hint" id="stageNote"></p>
+      </details>
+    </div>
+  </aside>
+
+  <nav id="keystrip" aria-label="Shortcuts">
+    <button id="kSettings" type="button"><b>[O]</b> Settings</button>
+    <button id="kPause" type="button"><b>[Space]</b> Pause</button>
+    <button id="kNew" type="button"><b>[R]</b> New</button>
+    <button id="kSnap" type="button"><b>[S]</b> PNG</button>
+    <button id="kFs" type="button"><b>[F]</b> Fullscreen</button>
+    <button id="kHide" type="button"><b>[H]</b> Hide</button>
+  </nav>
+
+  <!-- Transient status toast: feedback line only, never a scene label. -->
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Coarse-pointer restore affordance: only appears when the strip is
+       hidden on touch devices (keyboard users press Esc or O). -->
+  <button id="restoreChip" type="button" hidden aria-label="Open settings">[O]</button>
+
+  <script type="module" src="js/app.js"></script>
+  <script defer src="collection-ui.js" data-project="flying-objects-3d"></script>
+</body>
+</html>

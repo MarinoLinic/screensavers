@@ -1,0 +1,56 @@
+PASS default scene renders objects {'time': 1.2646109999999975, 'count': 16, 'seed': 1997, 'motion': 'drift', 'family': 'mixed', 'calls': 18, 'triangles': 31396, 'geometries': 12, 'textures': 1, 'renders': 187} gpu=ANGLE (AMD, AMD Rade
+PASS settings panel starts closed 
+PASS all eight styles applied 
+PASS motion switch keeps world alive {'time': 6.19721099999992, 'count': 16, 'seed': 1997, 'motion': 'orbit', 'family': 'mixed', 'calls': 34, 'triangles': 31396, 'geometries': 12, 'textures': 1, 'renders': 967}
+PASS classic flies one object, count pref kept {'time': 11.336060999999777, 'count': 1, 'seed': 1997, 'motion': 'classic', 'family': 'mixed', 'calls': 4, 'triangles': 4192, 'geometries': 12, 'textures': 1, 'renders': 1768}
+PASS style swap does not reset world 
+PASS pause freezes time 11.379935999999775 vs 11.379935999999775
+PASS pause stops GPU renders 1775 vs 1775
+PASS paused camera orbit renders 
+PASS paused style change renders once 
+PASS preset reaches engine settings copy 
+PASS paused motion switch applies new layout 
+PASS paused spread change moves positions 
+PASS paused portrait resize re-lays out 11.379935999999775
+PASS paused preset leaves transforms untouched 
+PASS O opens modal 
+PASS typing r in seed field does not trigger New 
+PASS apply seed rebuilds scene 
+PASS select keeps digit keys 
+PASS Space toggles details natively on summary 
+PASS Space on summary does not pause 
+PASS modal traps keyboard focus 
+PASS Escape closes and returns canvas focus 
+PASS family switch live (teapots) ['teapot', 'teapot', 'teapot', 'teapot']
+PASS count slider live 
+PASS material override live 
+PASS auto cycle advances style on wall clock orbital -> 1997
+PASS paused: cycle does not advance 
+PASS cycle independent of sim speed 28.503275999999726->31.507115999999723
+PASS H hides all chrome 
+PASS Escape restores controls 
+PASS PNG export works 
+PASS fullscreen covers whole document fullscreenElement=documentElement
+PASS rejected fullscreen shows readable toast fullscreen refused
+PASS missing fullscreen API shows readable toast fullscreen unavailable
+PASS fullscreen mocks caused no page errors 
+PASS G toggles scanlines only 
+PASS Q toggles lowres only 
+PASS lowres + scanlines persist 
+PASS panel/pause not persisted 
+PASS R wraps seed max->0 
+PASS geometries bounded over 30 swaps 12..12
+PASS textures bounded over 30 swaps 1..2
+PASS reset restores defaults for mobile shots 
+PASS 390px panel inside viewport 
+PASS 390px strip has no horizontal overflow 
+PASS 320px panel inside viewport 
+PASS 320px strip has no horizontal overflow 
+PASS coarse pointer gets restore chip 
+PASS chip restores chrome + panel 
+PASS reduced motion starts paused with fixed camera 
+PASS reduced motion stays still 
+PASS WebGL failure shows readable recovery 
+PASS no runtime network dependencies []
+PASS no shader or JavaScript errors []
+55/55 checks passed

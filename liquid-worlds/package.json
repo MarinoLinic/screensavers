@@ -1,0 +1,8 @@
+{
+  "name": "liquid-worlds",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Three procedural liquid landscapes, inspired by the Plus! era",
+  "scripts": { "serve": "node tools/serve.js", "test": "node --test tests/*.test.js", "smoke": "py tools/smoke.py" }
+}

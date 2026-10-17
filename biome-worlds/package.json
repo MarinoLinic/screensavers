@@ -1,0 +1,14 @@
+{
+  "name": "biome-worlds",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ten animated 3D biomes with fixed landscapes, optional dioramas, and three aesthetics. Entirely offline.",
+  "scripts": {
+    "serve": "node tools/serve.js",
+    "test": "node --test tests/*.test.js",
+    "review": "py tools/review.py",
+    "smoke": "py tools/smoke.py",
+    "performance": "py tools/performance.py"
+  }
+}

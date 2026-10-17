@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#08222b" />
+  <title>BIOME.EXE - Pixel Biomes</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2308222b'/%3E%3Crect x='1' y='1' width='7' height='7' fill='%230f7d78'/%3E%3Crect x='8' y='1' width='7' height='7' fill='%23d9a44a'/%3E%3Crect x='1' y='8' width='7' height='7' fill='%233f6b35'/%3E%3Crect x='8' y='8' width='7' height='7' fill='%238d8a7e'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="collection-ui.css">
+</head>
+<body>
+  <!-- The biome always fills the whole viewport; chrome floats above it. -->
+  <main id="stage" aria-label="Pixel biomes stage">
+    <canvas id="tank" tabindex="0" aria-label="Animated pixel-art desert scene. Tap to raise a dust gust."></canvas>
+  </main>
+
+  <div id="chrome">
+    <header class="brand" aria-hidden="true">
+      <svg class="fish-ico" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="1" y="1" width="7" height="7" fill="#0f7d78"/>
+        <rect x="8" y="1" width="7" height="7" fill="#d9a44a"/>
+        <rect x="1" y="8" width="7" height="7" fill="#3f6b35"/>
+        <rect x="8" y="8" width="7" height="7" fill="#8d8a7e"/>
+      </svg>
+      <span class="brand-name">BIOME.EXE</span>
+      <span class="brand-sub">PIXEL WORLDS / 1995, REIMAGINED</span>
+    </header>
+    <div class="hab-tag" id="habTag">DESERT / SANDSTONE ARCHES</div>
+  </div>
+
+  <nav id="keystrip" aria-label="Screensaver controls">
+    <button id="kSettings" type="button"><b>[O]</b> Settings</button>
+    <button id="kPause" type="button" aria-pressed="false"><b>[Space]</b> Pause</button>
+    <button id="kPrev" type="button" aria-keyshortcuts="P ArrowLeft"><b>[P]</b> Previous</button>
+    <button id="kNext" type="button" aria-keyshortcuts="N ArrowRight"><b>[N]</b> Next</button>
+    <button id="kSnap" type="button"><b>[S]</b> Snapshot</button>
+    <button id="kFs" type="button"><b>[F]</b> Fullscreen</button>
+    <button id="kHide" type="button"><b>[H]</b> Hide</button>
+  </nav>
+
+  <!-- Transient status toast: feedback line only, never a scene label. -->
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Restore affordance shown whenever chrome is explicitly hidden. -->
+  <button id="restoreChip" type="button" hidden aria-label="Show controls">&#9646;</button>
+
+  <div id="backdrop" hidden></div>
+
+  <!-- Win95-flavoured floating settings window; never reframes the tank. -->
+  <aside id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" hidden inert>
+    <header class="titlebar">
+      <span class="titlebar-ico" aria-hidden="true">&#9670;</span>
+      <h1 id="panelTitle">Pixel Biomes — Display Properties</h1>
+      <button id="panelClose" type="button" aria-label="Close settings">&#10005;</button>
+    </header>
+    <div class="panel-body">
+
+      <fieldset class="grp">
+        <legend>Biome</legend>
+        <label class="field"><span>Biome family</span><select id="biomeSel"></select></label>
+        <div class="hab-grid" id="habitats" role="group" aria-label="Biomes"></div>
+        <p class="hint" id="habHint"></p>
+        <p class="hint">P previous · N next · B next biome · 1–9 biomes · 0 tropical</p>
+      </fieldset>
+
+      <fieldset class="grp">
+        <legend>Life</legend>
+        <label class="field">
+          <span>Population <output id="popOut">12</output></span>
+          <input id="popIn" type="range" min="8" max="48" step="1" value="12" />
+        </label>
+        <label class="field">
+          <span>Community</span>
+          <select id="communitySel">
+            <option value="mixed">Mixed reef life</option>
+            <option value="reef">Reef fish</option>
+            <option value="jellies">Jelly drift</option>
+          </select>
+        </label>
+        <p class="hint" id="communityHint" hidden>Life follows this scene; your Marine community is kept.</p>
+        <label class="check">
+          <input id="visitorsIn" type="checkbox" />
+          <span id="visitorsLabel">Visitors (fox &amp; camel)</span>
+        </label>
+        <label class="field">
+          <span>Motion speed <output id="speedOut">0.70×</output></span>
+          <input id="speedIn" type="range" min="0.25" max="2" step="0.05" value="0.7" />
+        </label>
+      </fieldset>
+
+      <fieldset class="grp">
+        <legend>Atmosphere</legend>
+        <label class="check"><input id="raysIn" type="checkbox" /> <span id="raysLabel">Sun glare</span></label>
+        <label class="check"><input id="bubblesIn" type="checkbox" /> <span id="bubblesLabel">Wind gusts</span></label>
+        <label class="check"><input id="planktonIn" type="checkbox" /> <span id="planktonLabel">Dust motes</span></label>
+        <label class="check"><input id="vegIn" type="checkbox" /> <span id="vegLabel">Cacti &amp; scrub</span></label>
+        <label class="check"><input id="scanIn" type="checkbox" /> <span>Scanlines</span></label>
+        <p class="hint" id="atmosphereHint" hidden>The Moon has no air or plants. Atmosphere preferences are kept for your next biome.</p>
+        <label class="field" id="desertLightField">
+          <span>Desert light</span>
+          <select id="desertLightSel">
+            <option value="golden">Golden hour</option>
+            <option value="day">Daylight</option>
+            <option value="night">Moonlit</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Pixel size</span>
+          <select id="pixelSel">
+            <option value="2">Fine · 2</option>
+            <option value="3">Classic · 3</option>
+            <option value="4">Chunky · 4</option>
+          </select>
+        </label>
+        <label class="field"><span>Frame rate</span><select id="frameRateSel"><option value="30">30 fps · gentle on the laptop</option><option value="60">60 fps · smoother motion</option></select></label>
+      </fieldset>
+
+      <fieldset class="grp">
+        <legend>Tour</legend>
+        <label class="check">
+          <input id="autoCycleIn" type="checkbox" />
+          <span>Drift through all habitats</span>
+        </label>
+        <label class="field">
+          <span>Tour route</span>
+          <select id="tourScopeSel"><option value="biomes">Each biome equally</option><option value="scenes">All 17 scenes</option><option value="family">Scenes in this biome</option></select>
+        </label>
+        <label class="field">
+          <span>Stay in each habitat</span>
+          <select id="cycleIntervalSel" disabled>
+            <option value="45">45 seconds</option>
+            <option value="90">90 seconds</option>
+            <option value="180">180 seconds</option>
+          </select>
+        </label>
+        <p class="hint">Equal biome time rotates Marine and Mediterranean designs on each visit. Pausing freezes the tour.</p>
+      </fieldset>
+
+      <fieldset class="grp">
+        <legend>Seed</legend>
+        <label class="field">
+          <span>Arrangement seed</span>
+          <span class="seed-row">
+            <input id="seedIn" type="number" min="0" max="2147483647" step="1" value="1995" />
+          </span>
+        </label>
+        <div class="btn-row">
+          <button id="seedBtn" type="button">Apply</button>
+          <button id="newBtn" type="button">New</button>
+          <button id="resetBtn" type="button">Defaults</button>
+        </div>
+        <p class="hint keys-doc">
+          O settings · Esc close · Space pause · S snapshot · F fullscreen ·
+          H hide · N / → next scene · P / ← previous · B next biome · 1–9 biomes · 0 tropical · tap for particles
+        </p>
+      </fieldset>
+
+      <details class="grp roadmap">
+        <summary>Atlas — 10 biomes, 17 scenes</summary>
+        <ul id="todoList">
+          <li><b>Marine</b> — Coral Garden, Kelp Cathedral, Moonlit Lagoon, Midnight Trench</li>
+          <li><b>Desert</b> — sandstone arches in three lights</li>
+          <li><b>Jungle</b> — Emerald Canopy</li>
+          <li><b>Temperate forest</b> — Mosswood Clearing</li>
+          <li><b>Tundra</b> — Silver Tundra</li>
+          <li><b>Mediterranean</b> — Limestone Cove, Adriatic Beach, Adriatic Harbour, Olive Terraces</li>
+          <li><b>Steppe</b> — Feathergrass Sea</li>
+          <li><b>River</b> — Willow River</li>
+          <li><b>Moon</b> — Earthrise Station</li>
+          <li><b>Tropical Island</b> — Caribbean Palm Beach, Atoll Lagoon</li>
+        </ul>
+      </details>
+
+    </div>
+  </aside>
+
+  <script type="module" src="js/app.js"></script>
+  <script defer src="collection-ui.js" data-project="pixel-biomes"></script>
+</body>
+</html>

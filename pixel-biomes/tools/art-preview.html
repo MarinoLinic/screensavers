@@ -1,0 +1,97 @@
+<!doctype html>
+<!-- Dev-only art review page: sprite contact sheet + per-habitat backdrop
+     previews rendered straight from js/art.js. Not part of the saver. -->
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>BIOME art preview</title>
+<style>
+  body { margin: 0; background: #0b2b30; color: #bfe8e2; font: 12px "Lucida Console", monospace; }
+  #sheet { display: inline-block; background: #0b2b30; padding: 18px 22px; }
+  .row { display: flex; align-items: flex-end; gap: 18px; margin-bottom: 14px; }
+  .row .name { width: 120px; text-align: right; text-transform: uppercase; letter-spacing: .08em; padding-bottom: 6px; }
+  .row .hab { font-size: 9px; color: #6fa8a0; }
+  .row canvas { image-rendering: pixelated; background: #0b2b30; }
+  .row.decor canvas { background: #1a2a20; }
+  #backdrops { display: none; }
+</style>
+<div id="sheet"></div>
+<div id="backdrops"></div>
+<script type="module">
+import { SPECIES, createSpriteAtlas, paintBackdrop, createVegetation, paintVegetation } from '../js/art.js';
+import { DESERT_DECOR } from '../js/desert-sprites.js';
+import { HABITAT_ORDER } from '../js/settings.js';
+
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+const atlas = createSpriteAtlas(mk);
+const SCALE = 4;
+
+const sheet = document.getElementById('sheet');
+const rowFor = (id, sub) => {
+  const row = document.createElement('div');
+  row.className = 'row';
+  const name = document.createElement('div');
+  name.className = 'name';
+  name.innerHTML = `${id}<br><span class="hab">${sub}</span>`;
+  row.appendChild(name);
+  sheet.appendChild(row);
+  return row;
+};
+
+// All 52 species, all three poses. This is the authoritative art review.
+for (const [id, rec] of Object.entries(SPECIES)) {
+  const row = rowFor(id, `${rec.role} ${rec.motion || ''}<br>${rec.habitats[0]}`);
+  for (const frame of atlas[id]) {
+    const c = mk(frame.width, frame.height);
+    c.style.width = frame.width * SCALE + 'px';
+    c.style.height = frame.height * SCALE + 'px';
+    c.getContext('2d').drawImage(frame, 0, 0);
+    row.appendChild(c);
+  }
+}
+
+// desert decor pieces as a contact row
+{
+  const row = rowFor('decor', 'desert pieces');
+  row.classList.add('decor');
+  for (const [id, piece] of Object.entries(DESERT_DECOR)) {
+    const w = Math.max(...piece.rows.map(r => r.length)), h = piece.rows.length;
+    const c = mk(w + 2, h + 2);
+    const cctx = c.getContext('2d');
+    piece.rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) {
+      if (r[x] !== '.') { cctx.fillStyle = piece.palette[r[x]]; cctx.fillRect(x + 1, y + 1, 1, 1); }
+    }});
+    c.style.width = (w + 2) * SCALE + 'px';
+    c.style.height = (h + 2) * SCALE + 'px';
+    row.appendChild(c);
+  }
+}
+
+const backs = document.getElementById('backdrops');
+const opts = {};
+for (const habitat of HABITAT_ORDER.filter(h=>h!=='desert')) {
+  const src = mk(480, 300);
+  const sctx = src.getContext('2d');
+  paintBackdrop(sctx, 480, 300, habitat, 1995, opts);
+  paintVegetation(sctx, createVegetation(480, 300, habitat, 1995, opts), 3.2);
+  const up = mk(480 * 3, 300 * 3);
+  const uctx = up.getContext('2d');
+  uctx.imageSmoothingEnabled = false;
+  uctx.drawImage(src, 0, 0, up.width, up.height);
+  up.id = 'backdrop-' + habitat;
+  backs.appendChild(up);
+}
+// desert in all three lights
+for (const light of ['golden', 'day', 'night']) {
+  const src = mk(480, 300);
+  const sctx = src.getContext('2d');
+  paintBackdrop(sctx, 480, 300, 'desert', 1995, { desertLight: light });
+  paintVegetation(sctx, createVegetation(480, 300, 'desert', 1995, { desertLight: light }), 3.2);
+  const up = mk(480 * 3, 300 * 3);
+  const uctx = up.getContext('2d');
+  uctx.imageSmoothingEnabled = false;
+  uctx.drawImage(src, 0, 0, up.width, up.height);
+  up.id = 'backdrop-desert-' + light;
+  backs.appendChild(up);
+}
+window.__artReady = true;
+</script>

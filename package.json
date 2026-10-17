@@ -1,0 +1,11 @@
+{
+  "name": "screensavers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node tools/serve.js",
+    "open": "node tools/serve.js --open",
+    "sync:ui": "node tools/sync-ui.js",
+    "check:ui": "py tools/check-collection.py"
+  }
+}
