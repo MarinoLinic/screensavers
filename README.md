@@ -1,5 +1,15 @@
 # Screensavers
 
+<img src="favicon.svg" width="56" height="56" alt="Screensavers project icon">
+
+![Screensavers workflow diagram](docs/readme-workflow.svg)
+
+## Screenshots
+
+| Liquid Worlds | PIPELINE |
+| --- | --- |
+| ![Liquid Worlds](docs/screenshots/example-01.png) | ![PIPELINE](docs/screenshots/example-02.png) |
+
 Six local screensavers and games: Biome Worlds, 3D Flying Objects, Liquid Worlds,
 PIPELINE, Pixel Biomes, and Raycast Maze.
 
