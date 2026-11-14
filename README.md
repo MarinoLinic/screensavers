@@ -42,5 +42,8 @@ The local server is required for the projects that use JavaScript modules.
 - Each project's original README and regression checks remain in its folder.
 
 Only the six named projects were moved from projects-js. Its Git history retains
-their original versions. The source repository's deletions are left uncommitted;
-the initial collection commit belongs to this screensavers repository.
+their original versions. The source repository's migration deletions are recorded
+in Git, and all 226 former source paths have corresponding files in this collection.
+
+
+November 14, 2026 publication check: all six projects opened from the library, settings and portrait controls fit, and Liquid Worlds controls restored with H and the visible Controls button. The collection browser checks passed without browser, network or shader errors. Original projects-js history remains available.

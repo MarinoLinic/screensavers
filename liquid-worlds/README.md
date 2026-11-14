@@ -25,7 +25,7 @@ This is a browser screensaver, like the sibling projects. It does not install a 
 | **The Crucible** | Three pipe outlets pour rippling metal into a reservoir beneath catwalks and amber windows. A submerged vortex and intersecting impact rings bend the reflected structure. |
 | **Verdant Reach** | A waterfall feeds clear, refractive water over a stone riverbed. Foam collects near the fall and banks, leaves drift downstream, and the canopy moves in the morning light. |
 
-Settings start closed. The title and toolbar fade after seven seconds without interaction. Moving the pointer or using the keyboard reveals them. **H** hides them until **Esc**. The scene keeps running with settings open; paused scenes still allow camera movement, scene changes, and snapshots.
+Settings start closed. The title and toolbar fade after seven seconds without interaction. Moving the pointer or using the keyboard reveals them. **H** toggles the controls; **Esc** or the **Controls** button also restores them. The scene keeps running with settings open; paused scenes still allow camera movement, scene changes, and snapshots.
 
 ## Controls
 
@@ -36,7 +36,7 @@ Settings start closed. The title and toolbar fade after seven seconds without in
 | Choose scene | **1**, **2**, **3** |
 | Previous / next | **[** / **]** |
 | Fullscreen | **F** |
-| Clean view | **H**; **Esc** restores |
+| Hide / show controls | **H**; **Esc** or **Controls** also restores |
 | Save scene as PNG | **S** |
 | Camera drift / still | **A** |
 | New seeded landscape | **R** |

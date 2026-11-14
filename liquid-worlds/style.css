@@ -14,8 +14,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .drop-mark { color:var(--accent); font-size:28px; vertical-align:middle; }
 #chrome { position:fixed; inset:0; pointer-events:none; opacity:1; transition:opacity .9s ease; background:linear-gradient(#0003,transparent 22%,transparent 65%,#0004); }
 body.quiet #chrome { opacity:0; }
+body.quiet #toast { opacity:0; }
 body.quiet #canvas { cursor:none; }
 body.quiet #chrome button { pointer-events:none; }
+#restore { display:none; position:fixed; left:12px; bottom:max(12px,env(safe-area-inset-bottom)); z-index:4; padding:8px 10px; }
+body.quiet #restore { display:block; opacity:.85; }
 .masthead { display:flex; justify-content:space-between; align-items:center; padding:26px 34px; font-size:10px; letter-spacing:2.2px; text-shadow:0 2px 10px #000; }
 .brand { font-weight:600; }.brand .drop-mark { margin-right:9px; }.edition { opacity:.6; font-size:9px; }
 .scene-caption { position:absolute; left:34px; bottom:122px; text-shadow:0 2px 12px #0008; }

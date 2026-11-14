@@ -19,6 +19,13 @@ if(params.has('seed'))settings.seed=validate({seed:Number(params.get('seed'))}).
 function toast(text){$('toast').textContent=text;toastUntil=performance.now()+2600;$('toast').classList.add('visible');}
 function persist(){save(storage,settings);}
 function wake(){lastInteraction=performance.now();if(!hiddenControls)document.body.classList.remove('quiet');}
+function toggleControls(){
+  hiddenControls=!document.body.classList.contains('quiet');
+  document.body.classList.toggle('quiet',hiddenControls);
+  if(hiddenControls)canvas.focus({preventScroll:true});
+  else wake();
+}
+$('restore').addEventListener('click',()=>{hiddenControls=false;wake();canvas.focus({preventScroll:true});});
 function sync(){
   const current=SCENES.find(s=>s.id===settings.scene),index=SCENES.indexOf(current);
   document.documentElement.style.setProperty('--accent',current.color);
@@ -83,7 +90,7 @@ for(const [i,s] of SCENES.entries()){
   const gradients=['radial-gradient(ellipse at 65% 70%,#a8eef1 0%,#344d65 25%,#08121d 75%)','linear-gradient(130deg,#101d2b 15%,#da9559 48%,#596978 65%,#18232c)','linear-gradient(130deg,#bfc790,#537c49 40%,#88c9bd 65%,#1a4949)'];
   b.innerHTML=`<span class="swatch" style="background:${gradients[i]}"></span><span><strong>${s.name}</strong><small>${s.subtitle}</small></span>`;b.addEventListener('click',()=>travel(s.id));$('scenes').append(b);
 }
-for(const [id,fn] of Object.entries({prev:()=>next(-1),next:()=>next(),pause:togglePause,settingsButton:()=>setPanel(true),close:()=>setPanel(false),fullscreen,snapshot,hide:()=>{hiddenControls=true;document.body.classList.add('quiet');canvas.focus();},applySeed:()=>{settings.seed=validate({seed:Number($('seed').value)}).seed;persist();sync();travel(settings.scene);},newSeed:()=>{settings.seed=(settings.seed+7919)%2147483648;persist();sync();travel(settings.scene);},resetCamera:()=>{view?.reset();dirty=true;toast('View restored');}}))$(id).addEventListener('click',fn);
+for(const [id,fn] of Object.entries({prev:()=>next(-1),next:()=>next(),pause:togglePause,settingsButton:()=>setPanel(true),close:()=>setPanel(false),fullscreen,snapshot,hide:toggleControls,applySeed:()=>{settings.seed=validate({seed:Number($('seed').value)}).seed;persist();sync();travel(settings.scene);},newSeed:()=>{settings.seed=(settings.seed+7919)%2147483648;persist();sync();travel(settings.scene);},resetCamera:()=>{view?.reset();dirty=true;toast('View restored');}}))$(id).addEventListener('click',fn);
 $('backdrop').addEventListener('click',()=>setPanel(false));
 for(const id of ['quality','speed','activity','camera','interval','bloom','cycle']){
   $(id).addEventListener(['speed','activity'].includes(id)?'input':'change',()=>{
@@ -111,7 +118,7 @@ document.addEventListener('keydown',e=>{
   if(k==='o'){setPanel(!panelOpen);e.preventDefault();return;}
   if(panelOpen)return;
   if(k===' '){togglePause();e.preventDefault();}
-  else if(k==='f')fullscreen();else if(k==='s')snapshot();else if(k==='h')$('hide').click();
+  else if(k==='f')fullscreen();else if(k==='s')snapshot();else if(k==='h')toggleControls();
   else if(k==='a'){settings.camera=settings.camera==='drift'?'fixed':'drift';view?.reset();persist();sync();dirty=true;toast(settings.camera==='drift'?'Camera drifting':'Viewpoint held');}
   else if(k==='r')$('newSeed').click();else if((k==='['||k==='p'))next(-1);else if((k===']'||k==='n'))next();else if(['1','2','3'].includes(k))travel(SCENES[Number(k)-1].id);
   wake();
